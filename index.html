@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<div id="quiz-container">
+    <h1>Quiz Time!</h1>
+    <div id="quiz">
+        <!-- Questions and options will be dynamically added here -->
+    </div>
+    <button onclick="submitQuiz()">Submit</button>
+    <div id="result"></div>
+    <div id="timer">Time Left: <span id="time">60</span> seconds</div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            question: "What is an Array?",
+            options: ["it does stand for anything", "A play called in Madden", "A collection of items, or data, stored in contiguous memory locations", "I can't think of anything else"],
+            correctAnswer: "A collection of items, or data, stored in contiguous memory locations"
+        },
+        {
+            question: "What operation does (stack) use?",
+            options: ["Life Is Full Of...", "Last-In, First-Out", "Can't think of anthing else", "All The Above."],
+            correctAnswer: "Last-In, First-Out"
+        },
+        {
+            question: "Which one of these is also known as read/write memory?",
+            options: ["DVD", "ROM", "Hard Disk", "RAM"],
+            correctAnswer: "RAM"
+        },
+        {
+            question: "What is FIFO?",
+            options: ["First-In, First-Out", "Finding Indigo Ferrari Outside", "First-In, Last-Out", "All The Above"],
+            correctAnswer: "First-In, First-Out"
+        },
+        {
+            question: "What operation does (queue) use?",
+            options: ["FIFO", "LIFO", "MCU", "DCE"],
+            correctAnswer: "FIFO"
+        }
+        
+    ];
+
+    const quizContainer = document.getElementById('quiz');
+    const resultContainer = document.getElementById('result');
+    const timerElement = document.getElementById('time');
+
+    let timeLeft = 60;
+    let timer;
+
+    function buildQuiz() {
+        quizData.forEach((data, index) => {
+            const questionElement = document.createElement('div');
+            questionElement.classList.add('question');
+            questionElement.textContent = `${index + 1}. ${data.question}`;
+
+            const optionsElement = document.createElement('div');
+            optionsElement.classList.add('options');
+
+            data.options.forEach((option, optionIndex) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.innerHTML = `<input type="radio" name="q${index}" value="${optionIndex}"> ${option}`;
+                optionsElement.appendChild(optionElement);
+            });
+
+            quizContainer.appendChild(questionElement);
+            quizContainer.appendChild(optionsElement);
+        });
+    }
+
+    function submitQuiz() {
+        clearInterval(timer); // Stops the timer when the quiz is submitted
+
+        let score = 0;
+        const answers = [];
+
+        quizData.forEach((data, index) => {
+            const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+
+            if (selectedOption) {
+                const selectedOptionIndex = parseInt(selectedOption.value);
+                answers.push(data.options[selectedOptionIndex]);
+
+                if (data.options[selectedOptionIndex] === data.correctAnswer) {
+                    score++;
+                }
+            } else {
+                answers.push('Not answered');
+            }
+        });
+
+        displayResult(score, answers);
+        saveScoreToLocalStorage(score);
+    }
+
+    function displayResult(score, answers) {
+        resultContainer.innerHTML = `<p>Your Score: ${score} out of ${quizData.length}</p>`;
+        resultContainer.innerHTML += '<p>Answers:</p>';
+        answers.forEach((answer, index) => {
+            resultContainer.innerHTML += `<p>${index + 1}. ${answer}</p>`;
+        });
+    }
+
+    function saveScoreToLocalStorage(score) {
+        // Save the score to local storage
+        localStorage.setItem('quizScore', score);
+    }
+
+    function loadScoreFromLocalStorage() {
+        // Load the score from local storage
+        const score = localStorage.getItem('quizScore');
+        if (score !== null) {
+            resultContainer.innerHTML += `<p>Your Previous Score: ${score} out of ${quizData.length}</p>`;
+        }
+    }
+
+    function updateTimer() {
+        timeLeft--;
+        timerElement.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            submitQuiz();
+        }
+    }
+
+    buildQuiz();
+    loadScoreFromLocalStorage();
+    timer = setInterval(updateTimer, 1000); // Update the timer every second
+</script>
+
+</body>
+</html>
